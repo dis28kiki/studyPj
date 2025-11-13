@@ -1,9 +1,10 @@
+
 import pygame
 import sys
 pygame.init()
 h,w = 800,600
 sc = pygame.display.set_mode((h, w))
-pygame.display.set_caption("kiki")
+pygame.display.set_caption("Тайна земли")
 clock = pygame.time.Clock()
 
 
@@ -23,7 +24,7 @@ class Platform:
         self.rect = pygame.Rect(x, y, w, h)
         self.sprite = pygame.transform.scale(platform_sprites[sprite_index], (w, h))
 
-    def draw(self):
+    def draw(self,surface):
         sc.blit(self.sprite, self.rect)
 class Player:
     def __init__(self):
@@ -96,6 +97,214 @@ btm_ex = Button(im_btm_ex,300,435,0.8)
 btm_akk = Button(im_btm_akk,55,420,0.25)
 btm_stat = Button(im_btm_stat,55,470,0.25)
 
+#|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+platforms_zemlq = [
+    Platform(0,550,50,50,0),
+    Platform(50, 550, 50, 50, 0),
+    Platform(100, 550, 50, 50, 0),
+    Platform(150, 550, 50, 50, 0),
+    Platform(200, 550, 50, 50, 0),
+    Platform(250, 550, 50, 50, 0),
+    Platform(300, 550, 50, 50, 0),
+    Platform(350, 550, 50, 50, 0),
+    Platform(400, 550, 50, 50, 0),
+    Platform(450, 550, 50, 50, 0),
+    Platform(500, 550, 50, 50, 0),
+    Platform(550, 550, 50, 50, 0),
+    Platform(600, 550, 50, 50, 0),
+    Platform(650, 550, 50, 50, 0),
+    Platform(700, 550, 50, 50, 0),
+    Platform(750, 550, 50, 50, 0),
+    Platform(-49, 500, 50, 50, 0),
+    Platform(-49, 450, 50, 50, 0),
+    Platform(-49, 400, 50, 50, 0),
+    Platform(-49, 350, 50, 50, 0),
+    Platform(-49, 300, 50, 50, 0),
+    Platform(-49, 250, 50, 50, 0),
+    Platform(-49, 200, 50, 50, 0),
+    Platform(-49, 150, 50, 50, 0),
+    Platform(-49, 100, 50, 50, 0),
+    Platform(-49, 50, 50, 50, 0),
+    Platform(-49, 0, 50, 50, 0),
+    Platform(799, 500, 50, 50, 0),
+    Platform(799, 450, 50, 50, 0),
+    Platform(799, 400, 50, 50, 0),
+    Platform(799, 350, 50, 50, 0),
+    Platform(799, 300, 50, 50, 0),
+    Platform(799, 250, 50, 50, 0),
+    Platform(799, 200, 50, 50, 0),
+    Platform(799, 150, 50, 50, 0),
+    Platform(799, 100, 50, 50, 0),
+    Platform(799, 50, 50, 50, 0),
+    Platform(799, 0, 50, 50, 0),
+    Platform(0, -45, 50, 50, 0),
+    Platform(50, -45, 50, 50, 0),
+    Platform(100, -45, 50, 50, 0),
+    Platform(150, -45, 50, 50, 0),
+    Platform(200, -45, 50, 50, 0),
+    Platform(250, -45, 50, 50, 0),
+    Platform(300, -45, 50, 50, 0),
+    Platform(350, -45, 50, 50, 0),
+    Platform(400, -45, 50, 50, 0),
+    Platform(450, -45, 50, 50, 0),
+    Platform(500, -45, 50, 50, 0),
+    Platform(550, -45, 50, 50, 0),
+    Platform(600, -45, 50, 50, 0),
+    Platform(650, -45, 50, 50, 0),
+    Platform(700, -45, 50, 50, 0),
+    Platform(750, -45, 50, 50, 0),
+]
+
+platforms_travka = [
+    Platform(0, 500, 50, 50, 4),
+    Platform(50, 500, 50, 50, 4),
+    Platform(100, 500, 50, 50, 4),
+    Platform(150, 500, 50, 50, 4),
+    Platform(200, 500, 50, 50, 4),
+    Platform(250, 500, 50, 50, 4),
+    Platform(300, 500, 50, 50, 4),
+    Platform(350, 500, 50, 50, 4),
+    Platform(400, 500, 50, 50, 4),
+    Platform(450, 500, 50, 50, 4),
+    Platform(500, 500, 50, 50, 4),
+    Platform(550, 500, 50, 50, 4),
+    Platform(600, 500, 50, 50, 4),
+    Platform(650, 500, 50, 50, 4),
+    Platform(700, 500, 50, 50, 4),
+    Platform(750, 500, 50, 50, 4),
+]
+
+platforms_sk_fly_levl3 = [
+    Platform(70, 480, 40, 40, 6),
+    Platform(110, 480, 40, 40, 7),
+    Platform(140, 420, 40, 40, 6),
+    Platform(180, 420, 40, 40, 7),
+    Platform(220, 420, 40, 40, 7),
+    Platform(270, 470, 40, 40, 6),
+    Platform(320, 380, 40, 40, 7),
+    Platform(360, 380, 40, 40, 6),
+    Platform(400, 380, 40, 40, 7),
+    Platform(480, 380, 40, 40, 7),
+    Platform(560, 380, 40, 40, 6),
+    Platform(600, 420, 40, 40, 6),
+    Platform(640, 460, 40, 40, 7),
+    Platform(680, 500, 40, 40, 7),
+    Platform(600, 270, 40, 40, 7),
+    Platform(640, 270, 40, 40, 6),
+    Platform(680, 270, 40, 40, 7),
+    Platform(560, 270, 40, 40, 6),
+    Platform(480, 270, 40, 40, 6),
+    Platform(400, 270, 40, 40, 7),
+    Platform(320, 270, 40, 40, 7),
+    Platform(280, 270, 40, 40, 6),
+    Platform(200, 220, 40, 40, 6),
+    Platform(160, 220, 40, 40, 7),
+    Platform(100, 170, 40, 40, 6),
+    Platform(60, 170, 40, 40, 7),
+    Platform(180, 100, 40, 40, 7),
+    Platform(260, 100, 40, 40, 6),
+    Platform(340, 100, 40, 40, 7),
+    Platform(380, 100, 40, 40, 7),
+    Platform(420, 100, 40, 40, 7),
+    Platform(460, 100, 40, 40, 7),
+    Platform(500, 100, 40, 40, 7),
+    Platform(540, 100, 40, 40, 7),
+    Platform(580, 100, 40, 40, 7),
+    Platform(660, 80, 40, 40, 7),
+    Platform(700, 80, 40, 40, 7),
+    Platform(740, 80, 40, 40, 7),
+
+]
+
+platforms_sk_fly_levl2 = [
+    Platform(70, 480, 40, 40, 6),
+    Platform(110, 480, 40, 40, 7),
+    Platform(140, 430, 40, 40, 6),
+    Platform(180, 430, 40, 40, 7),
+    Platform(220, 430, 40, 40, 7),
+    Platform(270, 430, 40, 40, 6),
+    Platform(320, 400, 40, 40, 7),
+    Platform(360, 380, 40, 40, 6),
+    Platform(400, 380, 40, 40, 7),
+    Platform(440, 380, 40, 40, 6),
+    Platform(480, 380, 40, 40, 7),
+    Platform(560, 380, 40, 40, 6),
+    Platform(600, 420, 40, 40, 6),
+    Platform(640, 460, 40, 40, 7),
+    Platform(680, 500, 40, 40, 7),
+    Platform(600, 270, 40, 40, 7),
+    Platform(640, 270, 40, 40, 6),
+    Platform(680, 270, 40, 40, 7),
+    Platform(560, 270, 40, 40, 6),
+    Platform(520, 270, 40, 40, 6),
+    Platform(480, 270, 40, 40, 6),
+    Platform(360, 270, 40, 40, 6),
+    Platform(400, 270, 40, 40, 7),
+    Platform(320, 270, 40, 40, 7),
+    Platform(280, 270, 40, 40, 6),
+    Platform(200, 220, 40, 40, 6),
+    Platform(160, 220, 40, 40, 7),
+    Platform(100, 170, 40, 40, 6),
+    Platform(60, 170, 40, 40, 7),
+    Platform(180, 100, 40, 40, 7),
+    Platform(220, 100, 40, 40, 6),
+    Platform(260, 100, 40, 40, 6),
+    Platform(340, 100, 40, 40, 7),
+    Platform(380, 100, 40, 40, 7),
+    Platform(420, 100, 40, 40, 7),
+    Platform(460, 100, 40, 40, 7),
+    Platform(500, 100, 40, 40, 7),
+    Platform(540, 100, 40, 40, 7),
+    Platform(580, 100, 40, 40, 7),
+    Platform(660, 80, 40, 40, 7),
+    Platform(700, 80, 40, 40, 7),
+    Platform(740, 80, 40, 40, 7),
+
+]
+platforms_sk_fly_levl1 = [
+    Platform(70, 480, 40, 40, 6),
+    Platform(140, 430, 40, 40, 6),
+    Platform(180, 430, 40, 40, 7),
+    Platform(220, 430, 40, 40, 7),
+    Platform(270, 430, 40, 40, 6),
+    Platform(320, 400, 40, 40, 7),
+    Platform(360, 380, 40, 40, 6),
+    Platform(400, 380, 40, 40, 7),
+    Platform(440, 380, 40, 40, 6),
+    Platform(480, 380, 40, 40, 7),
+    Platform(560, 380, 40, 40, 6),
+    Platform(620, 370, 40, 40, 7),
+    Platform(680, 340, 40, 40, 7),
+    Platform(600, 280, 40, 40, 7),
+    Platform(730, 280, 40, 40, 7),
+    Platform(560, 260, 40, 40, 6),
+    Platform(520, 260, 40, 40, 6),
+    Platform(480, 260, 40, 40, 6),
+    Platform(360, 260, 40, 40, 6),
+    Platform(400, 260, 40, 40, 7),
+    Platform(320, 260, 40, 40, 7),
+    Platform(280, 260, 40, 40, 6),
+    Platform(200, 220, 40, 40, 6),
+    Platform(160, 220, 40, 40, 7),
+    Platform(100, 170, 40, 40, 6),
+    Platform(60, 170, 40, 40, 7),
+    Platform(20, 170, 40, 40, 7),
+
+    Platform(180, 110, 40, 40, 7),
+    Platform(220, 100, 40, 40, 6),
+    Platform(260, 100, 40, 40, 6),
+    Platform(340, 100, 40, 40, 7),
+    Platform(380, 100, 40, 40, 7),
+    Platform(420, 100, 40, 40, 7),
+    Platform(460, 100, 40, 40, 7),
+    Platform(500, 100, 40, 40, 7),
+    Platform(540, 100, 40, 40, 7),
+    Platform(580, 100, 40, 40, 7),
+    Platform(660, 100, 40, 40, 7),
+    Platform(700, 100, 40, 40, 7),
+    Platform(740, 100, 40, 40, 7),
+
+]
 while True:
     sc.blit(bg, (0, 0))
     clock.tick(FPS)
@@ -127,10 +336,17 @@ while True:
             raise  SystemExit
     if menu_st == "main":
         keys = pygame.key.get_pressed()
+
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
             sc.blit(bg,(0,0))
         sc.blit(bg_l1,(0,0))
+        for platform_z in platforms_zemlq:
+            platform_z.draw(sc)
+        for platform_t in platforms_travka:
+            platform_t.draw(sc)
+        for platform_s_f in platforms_sk_fly_levl1:
+            platform_s_f.draw(sc)
     elif menu_st == "setting":
         pass
     elif menu_st == "spravka":
@@ -140,6 +356,3 @@ while True:
     elif menu_st == "akk":
         pass
     pygame.display.update()
-
-
-#||||||||||||||||||||||||  тееееестт  ||||||||||||||||||||||||||||||||||||||||||||||
