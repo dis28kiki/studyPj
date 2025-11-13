@@ -3,6 +3,9 @@ import pygame
 import sys
 pygame.init()
 h,w = 800,600
+GRAVITY = 0.5
+jump = 10
+pl_sp = 3
 sc = pygame.display.set_mode((h, w))
 pygame.display.set_caption("Тайна земли")
 clock = pygame.time.Clock()
@@ -10,22 +13,22 @@ clock = pygame.time.Clock()
 def load_player_sor():
     sprites_pl = {}
     sprites_rl = {
-        'idle_r1':'sprites/player/player_idle1.png',
-        'idle_r2':'sprites/player/player_idle2.png',
-        'idle_l1': 'sprites/player/player_idle_l1.png',
-        'idle_l2': 'sprites/player/player_idle_l2.png',
-        'run_r1': 'sprites/player/player_run_r1.png',
-        'run_r2': 'sprites/player/player_run_r2.png',
-        'run_l1': 'sprites/player/player_run_l1.png',
-        'run_l2': 'sprites/player/player_run_l2.png',
-        'jump_r1': 'sprites/player/player_jump_r_1.png',
-        'jump_r2': 'sprites/player/player_jump_r_2.png',
-        'jump_l1': 'sprites/player/player_jump_l_1.png',
-        'jump_l2': 'sprites/player/player_jump_l_2.png'
+        'idle_r1':'player_idle1.png',
+        'idle_r2':'player_idle2.png',
+        'idle_l1': 'player_idle_l1.png',
+        'idle_l2': 'player_idle_l2.png',
+        'run_r1': 'player_run_r1.png',
+        'run_r2': 'player_run_r2.png',
+        'run_l1': 'player_run_l1.png',
+        'run_l2': 'player_run_l2.png',
+        'jump_r1': 'player_jump_r_1.png',
+        'jump_r2': 'player_jump_r_2.png',
+        'jump_l1': 'player_jump_l_1.png',
+        'jump_l2': 'player_jump_l_2.png'
     }
     for name,filename in sprites_rl.items():
         img = pygame.image.load(f'sprites/player/{filename}').convert_alpha()
-        img = pygame.transform.scale(img, (40, 50))
+        img = pygame.transform.scale(img, (80, 90))
         sprites_pl[name] = img
 
     return sprites_pl
@@ -48,11 +51,84 @@ class Platform:
 
     def draw(self,surface):
         sc.blit(self.sprite, self.rect)
+
+
 class Player:
-    def __init__(self):
-        pass
-    def draw(self):
-        pass
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 35, 35)
+        self.vx = 0
+        self.vy = 0
+        self.on_gr = False
+        self.spr = load_player_sor()
+
+        self.state = "idle_r"
+        self.animation_frame = 0
+        self.animation_speed = 0.1
+        self.last_update = pygame.time.get_ticks()
+        self.facing_right = True
+
+    def update(self, pl):
+        self.vy += GRAVITY
+
+        self.rect.x += self.vx
+        self.colliz(self.vx, 0, pl)
+
+        self.rect.y += self.vy
+        self.on_ground = False
+        self.colliz(0, self.vy, pl)
+
+        if not self.on_ground:
+            if self.vy < 0:
+                self.state = "jump_r" if self.facing_right else "jump_l"
+            else:
+                self.state = "jump_r" if self.facing_right else "jump_l"
+        elif abs(self.vx) > 0:
+            self.state = "run_r" if self.vx > 0 else "run_l"
+            self.facing_right = self.vx > 0
+        else:
+            self.state = "idle_r" if self.facing_right else "idle_l"
+
+    def colliz(self, vx, vy, platf):
+        for pl in platf:
+            if self.rect.colliderect(pl.rect):
+                if vx > 0:
+                    self.rect.right = pl.rect.left
+                if vx < 0:
+                    self.rect.left = pl.rect.right
+
+                if vy > 0:
+                    self.rect.bottom = pl.rect.top
+                    self.on_ground = True
+                    self.vy = 0
+                if vy < 0:
+                    self.rect.top = pl.rect.bottom
+                    self.vy = 0
+
+    def jump(self):
+        if self.on_ground:
+            self.vy = -jump
+
+    def draw(self, surface):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 100:
+            self.last_update = now
+            self.animation_frame = (self.animation_frame + 1) % 2
+
+        frame_suffix = "1" if self.animation_frame == 0 else "2"
+
+        if self.state.startswith("idle"):
+            sprite_key = f"idle_{'r' if self.facing_right else 'l'}{frame_suffix}"
+        elif self.state.startswith("run"):
+            sprite_key = f"run_{'r' if self.facing_right else 'l'}{frame_suffix}"
+        elif self.state.startswith("jump"):
+            sprite_key = f"jump_{'r' if self.facing_right else 'l'}{frame_suffix}"
+        else:
+            sprite_key = "idle_r1"
+
+        if sprite_key in self.spr:
+            offset_x = (self.rect.width - 80) // 2
+            offset_y = self.rect.height - 90
+            surface.blit(self.spr[sprite_key], (self.rect.x + offset_x, self.rect.y + offset_y))
 
 class Enemy:
     def __init__(self):
@@ -82,7 +158,6 @@ class Button:
         sc.blit(self.image,(self.rect.x,self.rect.y))
         return action
 
-# здесь определяются константы, классы и функции
 FPS = 60
 
 
@@ -284,7 +359,7 @@ platforms_sk_fly_levl2 = [
 
 ]
 platforms_sk_fly_levl1 = [
-    Platform(70, 480, 40, 40, 6),
+    Platform(60, 480, 40, 40, 6),
     Platform(140, 430, 40, 40, 6),
     Platform(180, 430, 40, 40, 7),
     Platform(220, 430, 40, 40, 7),
@@ -327,6 +402,7 @@ platforms_sk_fly_levl1 = [
     Platform(740, 100, 40, 40, 7),
 
 ]
+player = Player(50,460)
 while True:
     sc.blit(bg, (0, 0))
     clock.tick(FPS)
@@ -361,14 +437,31 @@ while True:
 
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
-            sc.blit(bg,(0,0))
-        sc.blit(bg_l1,(0,0))
+            sc.blit(bg, (0, 0))
+        all_platforms = platforms_zemlq  + platforms_sk_fly_levl1
+        player.update(all_platforms)
+
+        sc.blit(bg_l1, (0, 0))
         for platform_z in platforms_zemlq:
             platform_z.draw(sc)
         for platform_t in platforms_travka:
             platform_t.draw(sc)
         for platform_s_f in platforms_sk_fly_levl1:
             platform_s_f.draw(sc)
+
+        if keys[pygame.K_LEFT]:
+            player.vx = -pl_sp
+            player.facing_right = False
+        elif keys[pygame.K_RIGHT]:
+            player.vx = pl_sp
+            player.facing_right = True
+        else:
+            player.vx = 0
+
+        if keys[pygame.K_UP]:
+            player.jump()
+
+        player.draw(sc)
     elif menu_st == "setting":
         pass
     elif menu_st == "spravka":
