@@ -218,22 +218,22 @@ btm_stat = Button(im_btm_stat,55,470,0.25)
 
 #|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 platforms_zemlq = [
-    Platform(0,550,50,50,0),
-    Platform(50, 550, 50, 50, 0),
-    Platform(100, 550, 50, 50, 0),
-    Platform(150, 550, 50, 50, 0),
-    Platform(200, 550, 50, 50, 0),
-    Platform(250, 550, 50, 50, 0),
-    Platform(300, 550, 50, 50, 0),
-    Platform(350, 550, 50, 50, 0),
-    Platform(400, 550, 50, 50, 0),
-    Platform(450, 550, 50, 50, 0),
-    Platform(500, 550, 50, 50, 0),
-    Platform(550, 550, 50, 50, 0),
-    Platform(600, 550, 50, 50, 0),
-    Platform(650, 550, 50, 50, 0),
-    Platform(700, 550, 50, 50, 0),
-    Platform(750, 550, 50, 50, 0),
+    AnimatedPlatform(0,550,50,50,[0,1,2,3,2,1],0.6),
+    AnimatedPlatform(50, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(100, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(150, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(200, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(250, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(300, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(350, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(400, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(450, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(500, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(550, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(600, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(650, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(700, 550, 50, 50, [0,1,2,3,2,1],0.6),
+    AnimatedPlatform(750, 550, 50, 50, [0,1,2,3,2,1],0.6),
     Platform(-49, 500, 50, 50, 0),
     Platform(-49, 450, 50, 50, 0),
     Platform(-49, 400, 50, 50, 0),
@@ -275,22 +275,22 @@ platforms_zemlq = [
 ]
 
 platforms_travka = [
-    AnimatedPlatform(0, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(50, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(100, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(150, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(200, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(250, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(300, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(350, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(400, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(450, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(500, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(550, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(600, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(650, 500, 50, 50, [4, 5], 0.3),
-    AnimatedPlatform(700, 500, 50, 50, [5, 4], 0.3),
-    AnimatedPlatform(750, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(0, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(50, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(100, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(150, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(200, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(250, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(300, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(350, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(400, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(450, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(500, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(550, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(600, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(650, 500, 50, 50, [4, 5], 0.4),
+    AnimatedPlatform(700, 500, 50, 50, [5, 4], 0.4),
+    AnimatedPlatform(750, 500, 50, 50, [4, 5], 0.4),
 ]
 
 platforms_sk_fly_levl3 = [
@@ -415,16 +415,17 @@ platforms_sk_fly_levl1 = [
     Platform(340, 100, 40, 40, 7),
     Platform(380, 100, 40, 40, 7),
     Platform(420, 100, 40, 40, 7),
-    Platform(460, 100, 40, 40, 7),
-    Platform(500, 100, 40, 40, 7),
+    Platform(460, 100, 40, 40, 6),
+    Platform(500, 100, 40, 40, 6),
     Platform(540, 100, 40, 40, 7),
     Platform(580, 100, 40, 40, 7),
-    Platform(660, 100, 40, 40, 7),
+    Platform(660, 100, 40, 40, 6),
     Platform(700, 100, 40, 40, 7),
-    Platform(740, 100, 40, 40, 7),
+    Platform(740, 100, 40, 40, 6),
 
 ]
 player = Player(20,510)
+level = 0
 while True:
     sc.blit(bg, (0, 0))
     clock.tick(FPS)
@@ -456,20 +457,27 @@ while True:
             raise  SystemExit
     if menu_st == "main":
         keys = pygame.key.get_pressed()
-
+        level = 1
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
             sc.blit(bg, (0, 0))
         all_platforms = platforms_zemlq  + platforms_sk_fly_levl1
         player.update(all_platforms)
-
-        sc.blit(bg_l1, (0, 0))
+        if level == 1:
+            sc.blit(bg_l1, (0, 0))
+            for platform_s_f in platforms_sk_fly_levl1:
+                platform_s_f.draw(sc)
+        elif level==2:
+            for platform_s_f in platforms_sk_fly_levl2:
+                platform_s_f.draw(sc)
+        elif level==3:
+            for platform_s_f in platforms_sk_fly_levl3:
+                platform_s_f.draw(sc)
         for platform_z in platforms_zemlq:
             platform_z.draw(sc)
         for platform_t in platforms_travka:
             platform_t.draw(sc)
-        for platform_s_f in platforms_sk_fly_levl1:
-            platform_s_f.draw(sc)
+
 
         if keys[pygame.K_LEFT]:
             player.vx = -pl_sp
