@@ -4,7 +4,7 @@ import sys
 pygame.init()
 h,w = 800,600
 GRAVITY = 0.5
-jump = 10
+jump = 9
 pl_sp = 3
 sc = pygame.display.set_mode((h, w))
 pygame.display.set_caption("Тайна земли")
@@ -135,6 +135,28 @@ class Enemy:
         pass
     def draw(self):
         pass
+class AnimatedPlatform:
+    def __init__(self, x, y, w, h, sprite_indices, animation_speed=0.2):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.frames = []
+        for idx in sprite_indices:
+            sprite = platform_sprites[idx]
+            self.frames.append(pygame.transform.scale(sprite, (w, h)))
+        self.current_frame = 0
+        self.animation_speed = animation_speed
+        self.last_update = pygame.time.get_ticks()
+        self.sprite = self.frames[self.current_frame]  # текущий спрайт
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.animation_speed * 1000:  # конвертируем в миллисекунды
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.sprite = self.frames[self.current_frame]
+
+    def draw(self, surface):
+        self.update()
+        surface.blit(self.sprite, self.rect)
 
 class Button:
     def __init__(self,image,x,y,scale):
@@ -253,22 +275,22 @@ platforms_zemlq = [
 ]
 
 platforms_travka = [
-    Platform(0, 500, 50, 50, 4),
-    Platform(50, 500, 50, 50, 4),
-    Platform(100, 500, 50, 50, 4),
-    Platform(150, 500, 50, 50, 4),
-    Platform(200, 500, 50, 50, 4),
-    Platform(250, 500, 50, 50, 4),
-    Platform(300, 500, 50, 50, 4),
-    Platform(350, 500, 50, 50, 4),
-    Platform(400, 500, 50, 50, 4),
-    Platform(450, 500, 50, 50, 4),
-    Platform(500, 500, 50, 50, 4),
-    Platform(550, 500, 50, 50, 4),
-    Platform(600, 500, 50, 50, 4),
-    Platform(650, 500, 50, 50, 4),
-    Platform(700, 500, 50, 50, 4),
-    Platform(750, 500, 50, 50, 4),
+    AnimatedPlatform(0, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(50, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(100, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(150, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(200, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(250, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(300, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(350, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(400, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(450, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(500, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(550, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(600, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(650, 500, 50, 50, [4, 5], 0.3),
+    AnimatedPlatform(700, 500, 50, 50, [5, 4], 0.3),
+    AnimatedPlatform(750, 500, 50, 50, [4, 5], 0.3),
 ]
 
 platforms_sk_fly_levl3 = [
@@ -402,7 +424,7 @@ platforms_sk_fly_levl1 = [
     Platform(740, 100, 40, 40, 7),
 
 ]
-player = Player(50,460)
+player = Player(20,510)
 while True:
     sc.blit(bg, (0, 0))
     clock.tick(FPS)
