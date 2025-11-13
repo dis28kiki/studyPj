@@ -7,6 +7,28 @@ sc = pygame.display.set_mode((h, w))
 pygame.display.set_caption("Тайна земли")
 clock = pygame.time.Clock()
 
+def load_player_sor():
+    sprites_pl = {}
+    sprites_rl = {
+        'idle_r1':'sprites/player/player_idle1.png',
+        'idle_r2':'sprites/player/player_idle2.png',
+        'idle_l1': 'sprites/player/player_idle_l1.png',
+        'idle_l2': 'sprites/player/player_idle_l2.png',
+        'run_r1': 'sprites/player/player_run_r1.png',
+        'run_r2': 'sprites/player/player_run_r2.png',
+        'run_l1': 'sprites/player/player_run_l1.png',
+        'run_l2': 'sprites/player/player_run_l2.png',
+        'jump_r1': 'sprites/player/player_jump_r_1.png',
+        'jump_r2': 'sprites/player/player_jump_r_2.png',
+        'jump_l1': 'sprites/player/player_jump_l_1.png',
+        'jump_l2': 'sprites/player/player_jump_l_2.png'
+    }
+    for name,filename in sprites_rl.items():
+        img = pygame.image.load(f'sprites/player/{filename}').convert_alpha()
+        img = pygame.transform.scale(img, (40, 50))
+        sprites_pl[name] = img
+
+    return sprites_pl
 
 platform_sprites = [
     pygame.image.load("sprites/spr/zemlq1.png").convert_alpha(),
