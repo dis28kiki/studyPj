@@ -457,7 +457,7 @@ while True:
             raise  SystemExit
     if menu_st == "main":
         keys = pygame.key.get_pressed()
-        level = 1
+        level = 3
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
             sc.blit(bg, (0, 0))
@@ -468,9 +468,11 @@ while True:
             for platform_s_f in platforms_sk_fly_levl1:
                 platform_s_f.draw(sc)
         elif level==2:
+            sc.blit(bg_l2, (0, 0))
             for platform_s_f in platforms_sk_fly_levl2:
                 platform_s_f.draw(sc)
         elif level==3:
+            sc.blit(bg_l3, (0, 0))
             for platform_s_f in platforms_sk_fly_levl3:
                 platform_s_f.draw(sc)
         for platform_z in platforms_zemlq:
