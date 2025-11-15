@@ -10,6 +10,8 @@ sc = pygame.display.set_mode((h, w))
 pygame.display.set_caption("Тайна земли")
 clock = pygame.time.Clock()
 
+green = (10,150,10)
+
 def load_player_sor():
     sprites_pl = {}
     sprites_rl = {
@@ -131,12 +133,13 @@ class Player:
             surface.blit(self.spr[sprite_key], (self.rect.x + offset_x, self.rect.y + offset_y))
 
 class Enemy:
-    def __init__(self):
-        pass
-    def draw(self):
-        pass
+    def __init__(self,x,y):
+        self.rect = pygame.Rect(x,y,35,35)
+    def draw(self,surface):
+        pygame.draw.rect(sc,green,self.rect)
+
 class AnimatedPlatform:
-    def __init__(self, x, y, w, h, sprite_indices, animation_speed=0.2):
+    def __init__(self, x, y, w, h, sprite_indices, animation_speed):
         self.rect = pygame.Rect(x, y, w, h)
         self.frames = []
         for idx in sprite_indices:
@@ -425,6 +428,7 @@ platforms_sk_fly_levl1 = [
 
 ]
 player = Player(20,510)
+kivi = Enemy(700,70)
 level = 0
 while True:
     sc.blit(bg, (0, 0))
@@ -457,7 +461,7 @@ while True:
             raise  SystemExit
     if menu_st == "main":
         keys = pygame.key.get_pressed()
-        level = 3
+        level = 1
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
             sc.blit(bg, (0, 0))
@@ -467,6 +471,7 @@ while True:
             sc.blit(bg_l1, (0, 0))
             for platform_s_f in platforms_sk_fly_levl1:
                 platform_s_f.draw(sc)
+            kivi.draw(sc)
         elif level==2:
             sc.blit(bg_l2, (0, 0))
             for platform_s_f in platforms_sk_fly_levl2:
