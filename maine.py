@@ -35,6 +35,24 @@ def load_player_sor():
 
     return sprites_pl
 
+kivi_spr = [
+    pygame.image.load("sprites/kivi/idle1.png").convert_alpha(),
+    pygame.image.load("sprites/kivi/idle2.png").convert_alpha(),
+    pygame.image.load("sprites/kivi/idle3.png").convert_alpha()
+]
+
+belka_spr = [
+    pygame.image.load("sprites/belka/idle1.png").convert_alpha(),
+    pygame.image.load("sprites/belka/idle2.png").convert_alpha(),
+    pygame.image.load("sprites/belka/idle3.png").convert_alpha()
+]
+
+kiki_spr = [
+    pygame.image.load("sprites/kiki/kiki1.png").convert_alpha(),
+    pygame.image.load("sprites/kiki/kiki2.png").convert_alpha(),
+    pygame.image.load("sprites/kiki/kiki3.png").convert_alpha(),
+]
+
 platform_sprites = [
     pygame.image.load("sprites/spr/zemlq1.png").convert_alpha(),
     pygame.image.load("sprites/spr/zemlq2.png").convert_alpha(),
@@ -43,7 +61,9 @@ platform_sprites = [
     pygame.image.load("sprites/spr/trava1.png").convert_alpha(),
     pygame.image.load("sprites/spr/trava2.png").convert_alpha(),
     pygame.image.load("sprites/spr/rock_fly1.png").convert_alpha(),
-    pygame.image.load("sprites/spr/rock_fly2.png").convert_alpha()
+    pygame.image.load("sprites/spr/rock_fly2.png").convert_alpha(),
+    pygame.image.load("sprites/spr/liana1.png").convert_alpha(),
+    pygame.image.load("sprites/spr/liana2.png").convert_alpha()
 ]
 
 class Platform:
@@ -54,7 +74,28 @@ class Platform:
     def draw(self,surface):
         sc.blit(self.sprite, self.rect)
 
+class Kivi:
+    def __init__(self,x,y,w,h, sp_i = 0):
+        self.rect = pygame.Rect(x,y,w,h)
+        self.kivi_spr = pygame.transform.flip(kivi_spr[sp_i],False,False)
+        self.sprite = pygame.transform.scale(self.kivi_spr, (w, h))
+    def draw(self,surface):
+        sc.blit(self.sprite,self.rect)
 
+class Belka:
+    def __init__(self,x,y,w,h, sp_i = 0):
+        self.rect = pygame.Rect(x,y,w,h)
+        self.belka_spr = pygame.transform.flip(belka_spr[sp_i],True,False)
+        self.sprite = pygame.transform.scale(self.belka_spr, (w, h))
+    def draw(self,surface):
+        sc.blit(self.sprite,self.rect)
+
+class Kiki:
+    def __init__(self,x,y,w,h,sp_i=0):
+        self.rect = pygame.Rect(x,y,w,h)
+        self.sprite = pygame.transform.scale(kiki_spr[sp_i],(w,h))
+    def draw(self,surface):
+        sc.blit(self.sprite,self.rect)
 class Player:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 35, 35)
@@ -132,11 +173,7 @@ class Player:
             offset_y = self.rect.height - 90
             surface.blit(self.spr[sprite_key], (self.rect.x + offset_x, self.rect.y + offset_y))
 
-class Enemy:
-    def __init__(self,x,y):
-        self.rect = pygame.Rect(x,y,35,35)
-    def draw(self,surface):
-        pygame.draw.rect(sc,green,self.rect)
+
 
 class AnimatedPlatform:
     def __init__(self, x, y, w, h, sprite_indices, animation_speed):
@@ -148,11 +185,34 @@ class AnimatedPlatform:
         self.current_frame = 0
         self.animation_speed = animation_speed
         self.last_update = pygame.time.get_ticks()
-        self.sprite = self.frames[self.current_frame]  # текущий спрайт
+        self.sprite = self.frames[self.current_frame]
 
     def update(self):
         now = pygame.time.get_ticks()
-        if now - self.last_update > self.animation_speed * 1000:  # конвертируем в миллисекунды
+        if now - self.last_update > self.animation_speed * 1000:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.sprite = self.frames[self.current_frame]
+
+    def draw(self, surface):
+        self.update()
+        surface.blit(self.sprite, self.rect)
+
+class AnimatedEnemy:
+    def __init__(self, x, y, w, h, spr, sprite_indices, animation_speed):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.frames = []
+        for idx in sprite_indices:
+            sprite = spr[idx]
+            self.frames.append(pygame.transform.scale(sprite, (w, h)))
+        self.current_frame = 0
+        self.animation_speed = animation_speed
+        self.last_update = pygame.time.get_ticks()
+        self.sprite = self.frames[self.current_frame]
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.animation_speed * 1000:
             self.last_update = now
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             self.sprite = self.frames[self.current_frame]
@@ -336,13 +396,17 @@ platforms_sk_fly_levl3 = [
     Platform(700, 80, 40, 40, 7),
     Platform(740, 80, 40, 40, 7),
 
+    AnimatedPlatform(725, 480, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(725, 420, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(725, 380, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(725, 320, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(725, 280, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(725, 220, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(725, 180, 60, 60, [8, 9], 0.2),
 ]
 
 platforms_sk_fly_levl2 = [
-    Platform(70, 480, 40, 40, 6),
-    Platform(110, 480, 40, 40, 7),
-    Platform(140, 430, 40, 40, 6),
-    Platform(180, 430, 40, 40, 7),
+    Platform(100, 480, 40, 40, 6),
     Platform(220, 430, 40, 40, 7),
     Platform(270, 430, 40, 40, 6),
     Platform(320, 400, 40, 40, 7),
@@ -381,6 +445,14 @@ platforms_sk_fly_levl2 = [
     Platform(660, 80, 40, 40, 7),
     Platform(700, 80, 40, 40, 7),
     Platform(740, 80, 40, 40, 7),
+
+    AnimatedPlatform(730, 480, 60, 60, [8,9],0.2),
+    AnimatedPlatform(730, 420, 60, 60, [8,9],0.2),
+    AnimatedPlatform(730, 380, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(730, 320, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(730, 280, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(730, 220, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(730, 180, 60, 60, [8, 9], 0.2),
 
 ]
 platforms_sk_fly_levl1 = [
@@ -427,8 +499,13 @@ platforms_sk_fly_levl1 = [
     Platform(740, 100, 40, 40, 6),
 
 ]
-player = Player(20,510)
-kivi = Enemy(700,70)
+
+anim_kivi = AnimatedEnemy(700,45,65,65,kivi_spr,[0,1,2],0.2)
+
+player = Player(20,500)
+kivi = Kivi(700,45,65,65)
+belka = Belka(690,15,85,85)
+kiki = Kiki(700,20,75,75)
 level = 0
 while True:
     sc.blit(bg, (0, 0))
@@ -465,21 +542,27 @@ while True:
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
             sc.blit(bg, (0, 0))
-        all_platforms = platforms_zemlq  + platforms_sk_fly_levl1
-        player.update(all_platforms)
         if level == 1:
+            all_pl = platforms_zemlq+platforms_sk_fly_levl1
+            player.update(all_pl)
             sc.blit(bg_l1, (0, 0))
             for platform_s_f in platforms_sk_fly_levl1:
                 platform_s_f.draw(sc)
-            kivi.draw(sc)
+            anim_kivi.draw(sc)
         elif level==2:
+            all_pl = platforms_zemlq+platforms_sk_fly_levl2
+            player.update(all_pl)
             sc.blit(bg_l2, (0, 0))
             for platform_s_f in platforms_sk_fly_levl2:
                 platform_s_f.draw(sc)
+            belka.draw(sc)
         elif level==3:
+            all_pl = platforms_zemlq+platforms_sk_fly_levl3
+            player.update(all_pl)
             sc.blit(bg_l3, (0, 0))
             for platform_s_f in platforms_sk_fly_levl3:
                 platform_s_f.draw(sc)
+            kiki.draw(sc)
         for platform_z in platforms_zemlq:
             platform_z.draw(sc)
         for platform_t in platforms_travka:
