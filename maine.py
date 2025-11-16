@@ -500,7 +500,9 @@ platforms_sk_fly_levl1 = [
 
 ]
 
-anim_kivi = AnimatedEnemy(700,45,65,65,kivi_spr,[0,1,2],0.2)
+anim_kivi = AnimatedEnemy(700,45,65,65,kivi_spr,[0,1,2,1],0.3)
+anim_belka = AnimatedEnemy(690,15,85,85,belka_spr,[1,0,2,0],0.15)
+anim_kiki = AnimatedEnemy(700,20,75,75,kiki_spr,[1,0,2,0],0.19)
 
 player = Player(20,500)
 kivi = Kivi(700,45,65,65)
@@ -555,14 +557,14 @@ while True:
             sc.blit(bg_l2, (0, 0))
             for platform_s_f in platforms_sk_fly_levl2:
                 platform_s_f.draw(sc)
-            belka.draw(sc)
+            anim_belka.draw(sc)
         elif level==3:
             all_pl = platforms_zemlq+platforms_sk_fly_levl3
             player.update(all_pl)
             sc.blit(bg_l3, (0, 0))
             for platform_s_f in platforms_sk_fly_levl3:
                 platform_s_f.draw(sc)
-            kiki.draw(sc)
+            anim_kiki.draw(sc)
         for platform_z in platforms_zemlq:
             platform_z.draw(sc)
         for platform_t in platforms_travka:
