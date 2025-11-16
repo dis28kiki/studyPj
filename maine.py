@@ -26,7 +26,10 @@ def load_player_sor():
         'jump_r1': 'player_jump_r_1.png',
         'jump_r2': 'player_jump_r_2.png',
         'jump_l1': 'player_jump_l_1.png',
-        'jump_l2': 'player_jump_l_2.png'
+        'jump_l2': 'player_jump_l_2.png',
+        'climb1': "player_climb1.png",
+        'climb2': "player_climb2.png"
+
     }
     for name,filename in sprites_rl.items():
         img = pygame.image.load(f'sprites/player/{filename}').convert_alpha()
@@ -34,6 +37,15 @@ def load_player_sor():
         sprites_pl[name] = img
 
     return sprites_pl
+
+bg_spr = [
+    pygame.image.load("sprites/bg/bg_menu1.png"),
+    pygame.image.load("sprites/bg/bg_menu2.png"),
+    pygame.image.load("sprites/bg/bg_menu3.png"),
+    pygame.image.load("sprites/bg/bg_menu4.png"),
+    pygame.image.load("sprites/bg/bg_menu5.png")
+
+]
 
 kivi_spr = [
     pygame.image.load("sprites/kivi/idle1.png").convert_alpha(),
@@ -110,27 +122,75 @@ class Player:
         self.last_update = pygame.time.get_ticks()
         self.facing_right = True
 
-    def update(self, pl):
-        self.vy += GRAVITY
+        self.is_climb = False
+        self.speed_climb = 3
+        self.on_lians = False
 
-        self.rect.x += self.vx
-        self.colliz(self.vx, 0, pl)
-
-        self.rect.y += self.vy
-        self.on_ground = False
-        self.colliz(0, self.vy, pl)
-
-        if not self.on_ground:
-            if self.vy < 0:
-                self.state = "jump_r" if self.facing_right else "jump_l"
+    def update(self, pl, lians=[]):
+        self.on_lians = False
+        for lian in lians:
+            if self.rect.colliderect(lian.rect):
+                self.on_lians = True
+                break
             else:
-                self.state = "jump_r" if self.facing_right else "jump_l"
-        elif abs(self.vx) > 0:
-            self.state = "run_r" if self.vx > 0 else "run_l"
-            self.facing_right = self.vx > 0
-        else:
-            self.state = "idle_r" if self.facing_right else "idle_l"
+                self.on_lians = False
 
+        if not self.is_climb:
+            self.vy += GRAVITY
+            self.rect.x += self.vx
+            self.colliz(self.vx, 0, pl)
+
+            self.rect.y += self.vy
+            self.on_ground = False
+            self.colliz(0, self.vy, pl)
+
+            if not self.on_ground:
+                if self.vy < 0:
+                    self.state = "jump_r" if self.facing_right else "jump_l"
+                else:
+                    self.state = "jump_r" if self.facing_right else "jump_l"
+            elif abs(self.vx) > 0:
+                self.state = "run_r" if self.vx > 0 else "run_l"
+                self.facing_right = self.vx > 0
+            else:
+                self.state = "idle_r" if self.facing_right else "idle_l"
+        else:
+            self.vy = 0
+            self.rect.y += self.vx
+            self.state = "climb"
+
+        if lians:
+            min_y = min(liana.rect.y for liana in lians)
+            max_y = max(liana.rect.y for liana in lians) + lians[0].rect.height
+
+            if self.rect.top < min_y:
+                self.rect.top = min_y
+                self.vx = 0  # останавливаем движение
+            if self.rect.bottom-10 > max_y:
+                self.rect.bottom = max_y
+                self.vx = 0
+
+
+    def start_climb(self, lians):
+        if self.on_lians and not self.is_climb:
+            self.is_climb = True
+            if lians:
+                self.rect.centerx = lians[0].rect.centerx
+
+    def stop_climb(self):
+        self.is_climb = False
+
+    def climb_up(self):
+        if self.is_climb:
+            self.vx = -self.speed_climb
+
+    def climb_down(self):
+        if self.is_climb:
+            self.vx = self.speed_climb
+
+    def stop_climb_move(self):
+        if self.is_climb:
+            self.vx = 0
     def colliz(self, vx, vy, platf):
         for pl in platf:
             if self.rect.colliderect(pl.rect):
@@ -146,6 +206,23 @@ class Player:
                 if vy < 0:
                     self.rect.top = pl.rect.bottom
                     self.vy = 0
+    def colliz_en(self, vx, vy, enem):
+        if self.rect.colliderect(enem.rect):
+            if vx > 0:
+                self.rect.right = enem.rect.left
+            if vx < 0:
+                self.rect.left = enem.rect.right
+
+            if vy > 0:
+                self.rect.bottom = enem.rect.top
+                self.on_ground = True
+                self.vy = 0
+            if vy < 0:
+                self.rect.top = enem.rect.bottom
+                self.vy = 0
+
+            return True
+
 
     def jump(self):
         if self.on_ground:
@@ -165,6 +242,8 @@ class Player:
             sprite_key = f"run_{'r' if self.facing_right else 'l'}{frame_suffix}"
         elif self.state.startswith("jump"):
             sprite_key = f"jump_{'r' if self.facing_right else 'l'}{frame_suffix}"
+        elif self.state.startswith("climb"):
+            sprite_key = f"climb{frame_suffix}"
         else:
             sprite_key = "idle_r1"
 
@@ -362,7 +441,7 @@ platforms_sk_fly_levl3 = [
     Platform(140, 420, 40, 40, 6),
     Platform(180, 420, 40, 40, 7),
     Platform(220, 420, 40, 40, 7),
-    Platform(270, 470, 40, 40, 6),
+    Platform(270, 490, 40, 40, 6),
     Platform(320, 380, 40, 40, 7),
     Platform(360, 380, 40, 40, 6),
     Platform(400, 380, 40, 40, 7),
@@ -396,13 +475,6 @@ platforms_sk_fly_levl3 = [
     Platform(700, 80, 40, 40, 7),
     Platform(740, 80, 40, 40, 7),
 
-    AnimatedPlatform(725, 480, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(725, 420, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(725, 380, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(725, 320, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(725, 280, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(725, 220, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(725, 180, 60, 60, [8, 9], 0.2),
 ]
 
 platforms_sk_fly_levl2 = [
@@ -446,15 +518,18 @@ platforms_sk_fly_levl2 = [
     Platform(700, 80, 40, 40, 7),
     Platform(740, 80, 40, 40, 7),
 
-    AnimatedPlatform(730, 480, 60, 60, [8,9],0.2),
-    AnimatedPlatform(730, 420, 60, 60, [8,9],0.2),
+]
+
+lians = [
+    AnimatedPlatform(730, 480, 60, 60, [8, 9], 0.2),
+    AnimatedPlatform(730, 420, 60, 60, [8, 9], 0.2),
     AnimatedPlatform(730, 380, 60, 60, [8, 9], 0.2),
     AnimatedPlatform(730, 320, 60, 60, [8, 9], 0.2),
     AnimatedPlatform(730, 280, 60, 60, [8, 9], 0.2),
     AnimatedPlatform(730, 220, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 180, 60, 60, [8, 9], 0.2),
-
+    AnimatedPlatform(730, 180, 60, 60, [8, 9], 0.2)
 ]
+
 platforms_sk_fly_levl1 = [
     Platform(60, 480, 40, 40, 6),
     Platform(140, 430, 40, 40, 6),
@@ -500,6 +575,8 @@ platforms_sk_fly_levl1 = [
 
 ]
 
+anim_bg = AnimatedEnemy(0,0,800,600,bg_spr,[1,2,3,4,3,2,1],0.3)
+
 anim_kivi = AnimatedEnemy(700,45,65,65,kivi_spr,[0,1,2,1],0.3)
 anim_belka = AnimatedEnemy(690,15,85,85,belka_spr,[1,0,2,0],0.15)
 anim_kiki = AnimatedEnemy(700,20,75,75,kiki_spr,[1,0,2,0],0.19)
@@ -508,9 +585,10 @@ player = Player(20,500)
 kivi = Kivi(700,45,65,65)
 belka = Belka(690,15,85,85)
 kiki = Kiki(700,20,75,75)
-level = 0
+level = 1
+batl = False
 while True:
-    sc.blit(bg, (0, 0))
+    anim_bg.draw(sc)
     clock.tick(FPS)
     for i in pygame.event.get():
         if i.type == pygame.QUIT:
@@ -538,32 +616,102 @@ while True:
         elif btm_ex.draw(sc):
             print("exit")
             raise  SystemExit
+
+
+
     if menu_st == "main":
         keys = pygame.key.get_pressed()
-        level = 1
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
             sc.blit(bg, (0, 0))
+
+
         if level == 1:
             all_pl = platforms_zemlq+platforms_sk_fly_levl1
-            player.update(all_pl)
+            player.update(all_pl,lians)
             sc.blit(bg_l1, (0, 0))
             for platform_s_f in platforms_sk_fly_levl1:
                 platform_s_f.draw(sc)
             anim_kivi.draw(sc)
+            if player.colliz_en(700,45,kivi):
+                player.rect.x = 20
+                player.rect.y = 500
+                batl = True
+            if batl:
+                level = 2
+                batl = False
+
+
         elif level==2:
             all_pl = platforms_zemlq+platforms_sk_fly_levl2
-            player.update(all_pl)
+            player.update(all_pl,lians)
+            if keys[pygame.K_UP] and player.on_lians:
+                player.start_climb(lians)
+                player.climb_up()
+            elif keys[pygame.K_DOWN] and player.on_lians:
+                player.start_climb(lians)
+                player.climb_down()
+            elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
+                player.stop_climb_move()
+
+            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
+                player.stop_climb()
             sc.blit(bg_l2, (0, 0))
+            if keys[pygame.K_UP] and player.on_lians:
+                player.start_climb(lians)
+                player.climb_up()
+            elif keys[pygame.K_DOWN] and player.on_lians:
+                player.start_climb(lians)
+                player.climb_down()
+            elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
+                player.stop_climb_move()
+
+            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
+                player.stop_climb()
+
             for platform_s_f in platforms_sk_fly_levl2:
                 platform_s_f.draw(sc)
+            for lian in lians:
+                lian.draw(sc)
             anim_belka.draw(sc)
+            if player.colliz_en(690,15,belka):
+                player.rect.x = 20
+                player.rect.y = 500
+                batl = True
+            if batl:
+                level = 3
+                batl = False
+
+
+
         elif level==3:
             all_pl = platforms_zemlq+platforms_sk_fly_levl3
-            player.update(all_pl)
+            player.update(all_pl, lians)
+
+            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
+                player.stop_climb()
+            sc.blit(bg_l2, (0, 0))
+            if keys[pygame.K_UP] and player.on_lians:
+                player.start_climb(lians)
+                player.climb_up()
+            elif keys[pygame.K_DOWN] and player.on_lians:
+                player.start_climb(lians)
+                player.climb_down()
+            elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
+                player.stop_climb_move()
+
+            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
+                player.stop_climb()
+
             sc.blit(bg_l3, (0, 0))
             for platform_s_f in platforms_sk_fly_levl3:
                 platform_s_f.draw(sc)
+            for lian in lians:
+                lian.draw(sc)
+            if player.colliz_en(700,20,kiki):
+                batl = True
+            if batl:
+                pass
             anim_kiki.draw(sc)
         for platform_z in platforms_zemlq:
             platform_z.draw(sc)
@@ -571,17 +719,19 @@ while True:
             platform_t.draw(sc)
 
 
-        if keys[pygame.K_LEFT]:
-            player.vx = -pl_sp
-            player.facing_right = False
-        elif keys[pygame.K_RIGHT]:
-            player.vx = pl_sp
-            player.facing_right = True
-        else:
-            player.vx = 0
 
-        if keys[pygame.K_UP]:
-            player.jump()
+        if not player.is_climb:
+            if keys[pygame.K_LEFT]:
+                player.vx = -pl_sp
+                player.facing_right = False
+            elif keys[pygame.K_RIGHT]:
+                player.vx = pl_sp
+                player.facing_right = True
+            else:
+                player.vx = 0
+
+            if keys[pygame.K_UP] and not player.on_lians:
+                player.jump()
 
         player.draw(sc)
     elif menu_st == "setting":
