@@ -144,6 +144,9 @@ class Player:
             self.on_ground = False
             self.colliz(0, self.vy, pl)
 
+            if self.on_lians:
+                self.on_ground = False
+
             if not self.on_ground:
                 if self.vy < 0:
                     self.state = "jump_r" if self.facing_right else "jump_l"
@@ -159,17 +162,16 @@ class Player:
             self.rect.y += self.vx
             self.state = "climb"
 
-        if lians:
+        if lians and self.is_climb:
             min_y = min(liana.rect.y for liana in lians)
             max_y = max(liana.rect.y for liana in lians) + lians[0].rect.height
 
             if self.rect.top < min_y:
                 self.rect.top = min_y
-                self.vx = 0  # останавливаем движение
-            if self.rect.bottom-10 > max_y:
+                self.vx = 0
+            if self.rect.bottom - 10 > max_y:
                 self.rect.bottom = max_y
                 self.vx = 0
-
 
     def start_climb(self, lians):
         if self.on_lians and not self.is_climb:
@@ -521,13 +523,13 @@ platforms_sk_fly_levl2 = [
 ]
 
 lians = [
-    AnimatedPlatform(730, 480, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 420, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 380, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 320, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 280, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 220, 60, 60, [8, 9], 0.2),
-    AnimatedPlatform(730, 180, 60, 60, [8, 9], 0.2)
+    AnimatedPlatform(730, 480, 60, 60, [8, 9], 0.5),
+    AnimatedPlatform(730, 420, 60, 60, [8, 9], 0.5),
+    AnimatedPlatform(730, 380, 60, 60, [8, 9], 0.3),
+    AnimatedPlatform(730, 320, 60, 60, [8, 9], 0.5),
+    AnimatedPlatform(730, 280, 60, 60, [8, 9], 0.4),
+    AnimatedPlatform(730, 220, 60, 60, [8, 9], 0.5),
+    AnimatedPlatform(730, 180, 60, 60, [8, 9], 0.6)
 ]
 
 platforms_sk_fly_levl1 = [
@@ -578,14 +580,14 @@ platforms_sk_fly_levl1 = [
 anim_bg = AnimatedEnemy(0,0,800,600,bg_spr,[1,2,3,4,3,2,1],0.3)
 
 anim_kivi = AnimatedEnemy(700,45,65,65,kivi_spr,[0,1,2,1],0.3)
-anim_belka = AnimatedEnemy(690,15,85,85,belka_spr,[1,0,2,0],0.15)
+anim_belka = AnimatedEnemy(690,15,90,90,belka_spr,[1,0,2,0],0.15)
 anim_kiki = AnimatedEnemy(700,20,75,75,kiki_spr,[1,0,2,0],0.19)
 
 player = Player(20,500)
 kivi = Kivi(700,45,65,65)
 belka = Belka(690,15,85,85)
 kiki = Kiki(700,20,75,75)
-level = 1
+level = 2
 batl = False
 while True:
     anim_bg.draw(sc)
