@@ -3,6 +3,7 @@ import pygame
 import sys
 import random
 pygame.init()
+
 h,w = 800,600
 GRAVITY = 0.5
 jump = 9
@@ -11,7 +12,181 @@ sc = pygame.display.set_mode((h, w))
 pygame.display.set_caption("Тайна земли")
 clock = pygame.time.Clock()
 
+
+#pygame.mixer.music.load('musik/x.mp3')
+#pygame.mixer.music.set_volume(1)
+#pygame.mixer.music.play(-1)
+
+SCORE_FILE = "scores.txt"
+current_score = 0
+best_scores = []
+total_score = 0
+player_name = ""
+player_stats = {
+    "level1_score": 0,
+    "level2_score": 0,
+    "level3_score": 0,
+    "total_score": 0,
+    "games_played": 0,
+    "best_score": 0
+}
+current_level_score = 0
+
 green = (10,150,10)
+
+def load_scores():
+    global best_scores
+    with open(SCORE_FILE, 'r') as f:
+        scores = []
+        for line in f:
+            parts = line.strip().split(':')
+            if len(parts) == 2:
+                    name = parts[0]
+                    score = int(parts[1])
+                    scores.append((name, score))
+        scores.sort(key=lambda x: x[1], reverse=True)
+        best_scores = scores[:10]
+
+load_scores()
+def save_scores():
+    with open(SCORE_FILE, 'w') as f:
+        for name, score in best_scores:
+            f.write(f"{name}:{score}\n")
+def add_score(name, score):
+    global best_scores
+    best_scores.append((name, score))
+    best_scores.sort(key=lambda x: x[1], reverse=True)
+    best_scores = best_scores[:10]
+    save_scores()
+
+
+def reset_player_stats():
+    """Сбрасывает статистику игрока"""
+    global player_stats
+    player_stats = {
+        "level1_score": 0,
+        "level2_score": 0,
+        "level3_score": 0,
+        "total_score": 0,
+        "games_played": 0,
+        "best_score": 0
+    }
+
+def load_player_stats():
+    """Загружает статистику игрока из файла"""
+    global player_stats
+    if player_name:
+        try:
+            with open(f"player_{player_name}.txt", 'r') as f:
+                reset_player_stats()
+                for line in f:
+                    parts = line.strip().split(':')
+                    if len(parts) == 2:
+                        key = parts[0]
+                        value = int(parts[1])
+                        player_stats[key] = value
+        except FileNotFoundError:
+            print(f"Файл статистики для игрока {player_name} не найден, создается новый")
+            save_player_stats()
+
+
+def save_player_stats():
+    """Сохраняет статистику игрока в файл"""
+    if player_name:
+        with open(f"player_{player_name}.txt", 'w') as f:
+            for key, value in player_stats.items():
+                f.write(f"{key}:{value}\n")
+
+def get_player_name():
+    ms = pygame.Surface((800,600),pygame.SRCALPHA)
+    ms.fill((0, 0, 0,200))
+    sc.blit(ms,(0,0))
+    global player_name
+    name = ""
+    input_active = True
+    font = pygame.font.Font(None, 36)
+
+    while input_active:
+        prompt_text = font.render("Введите ваше имя:", True, (60, 179, 113))
+        name_text = font.render(name, True, (150, 255, 200))
+        instruction_text = font.render("Нажмите ENTER для подтверждения", True, (60, 179, 113))
+
+        sc.blit(prompt_text, (300, 250))
+        sc.blit(name_text, (400, 300))
+        sc.blit(instruction_text, (200, 350))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and name:
+                    player_name = name
+                    load_player_stats()
+                    input_active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    name = name[:-1]
+                else:
+                    # Добавляем символ, если это буква или цифра
+                    if event.unicode.isalnum() or event.unicode == ' ':
+                        if len(name) < 15:  # Ограничение длины имени
+                            name += event.unicode
+
+        pygame.display.update()
+        clock.tick(60)
+
+
+def draw_statistics_screen():
+    font_large = pygame.font.Font(None, 48)
+    font_medium = pygame.font.Font(None, 36)
+    font_small = pygame.font.Font(None, 28)
+    title = font_large.render("Лучшие результаты", True, (60, 179, 113))
+    sc.blit(title, (250, 130))
+
+    y_pos = 190
+    for i, (name, score) in enumerate(best_scores[:10], 1):
+        score_text = font_medium.render(f"{i}. {name}: {score}", True, (60, 179, 113))
+        sc.blit(score_text, (330, y_pos))
+        y_pos += 40
+
+    # Кнопка возврата
+    back_text = font_medium.render("Нажмите ESC для возврата", True, (100, 100, 63))
+    sc.blit(back_text, (250, 480))
+
+
+def draw_account_screen():
+    font_large = pygame.font.Font(None, 48)
+    font_medium = pygame.font.Font(None, 36)
+    font_small = pygame.font.Font(None, 28)
+
+    if player_name:
+        # Информация об игроке
+        name_text = font_large.render(f"Игрок: {player_name}", True, (60, 179, 113))
+        sc.blit(name_text, (280, 100))
+
+        # Статистика
+        games_text = font_medium.render(f"Игр сыграно: {player_stats['games_played']}", True, (60, 179, 113))
+        total_text = font_medium.render(f"Общий счет: {player_stats['total_score']}", True, (60, 179, 113))
+        best_text = font_medium.render(f"Лучший результат: {player_stats['best_score']}", True, (60, 179, 113))
+
+        sc.blit(games_text, (250, 150))
+        sc.blit(total_text, (250, 180))
+        sc.blit(best_text, (250, 210))
+
+        # Результаты по уровням
+        level1_text = font_small.render(f"Уровень 1: {player_stats['level1_score']}", True, (60, 179, 113))
+        level2_text = font_small.render(f"Уровень 2: {player_stats['level2_score']}", True, (60, 179, 113))
+        level3_text = font_small.render(f"Уровень 3: {player_stats['level3_score']}", True, (60, 179, 113))
+
+        sc.blit(level1_text, (320, 260))
+        sc.blit(level2_text, (320, 290))
+        sc.blit(level3_text, (320, 320))
+    else:
+        no_stats_text = font_medium.render("Пройдите игру для создания аккаунта", True, (60, 179, 113))
+        sc.blit(no_stats_text, (170, 200))
+
+    back_text = font_medium.render("Нажмите ESC для возврата", True, (100, 100, 63))
+    sc.blit(back_text, (250, 490))
 
 def load_player_sor():
     sprites_pl = {}
@@ -151,12 +326,14 @@ class BattleSystem:
         self.helf = 0
         self.arrow_timer = 0
         self.arrow_interval = 60
+        self.nw_level = 0
 
     def update(self):
         self.arrow_timer += 1
         if self.arrow_timer >= self.arrow_interval:
             self.arrow_timer = 0
-            self.spawn_arrow()
+            if self.nw_level == 0:
+                self.spawn_arrow()
 
         for arrow in self.arrows[:]:
             result = arrow.update()
@@ -186,11 +363,9 @@ class BattleSystem:
         return False
 
     def draw_ui(self, surface):
-        # Отображение счета и комбо
         font = pygame.font.Font(None, 36)
-        score_text = font.render(f'Score: {self.score}', True, (255, 255, 255))
-
-        surface.blit(score_text, (20, 500))
+        score_text = font.render(f'Score: {self.score}', True, (60, 179, 113))
+        surface.blit(score_text, (50, 50))
 
 
 class Btm_battle:
@@ -519,14 +694,14 @@ im_btm_stat = pygame.image.load("sprites/btm/icon_stat.png").convert_alpha()
 
 #||||||||||||||||||||||||  MENU   ||||||||||||||||||||||||||||||||||||||||||||||
 menu_st = "menu"
-btm_ng = Button(im_btm_ng,300,90,0.8)
-btm_prd = Button(im_btm_prd,300,175,0.8)
-btm_st = Button(im_btm_st,300,265,0.8)
-btm_sprv = Button(im_btm_sprv,300,350,0.8)
-btm_ex = Button(im_btm_ex,300,435,0.8)
+btm_ng = Button(im_btm_ng,300,150,0.8)
+#btm_prd = Button(im_btm_prd,300,175,0.8)
+#btm_st = Button(im_btm_st,300,265,0.8)
+btm_sprv = Button(im_btm_sprv,300,250,0.8)
+btm_ex = Button(im_btm_ex,300,350,0.8)
 
-btm_akk = Button(im_btm_akk,55,420,0.25)
-btm_stat = Button(im_btm_stat,55,470,0.25)
+btm_akk = Button(im_btm_akk,340,450,0.25)
+btm_stat = Button(im_btm_stat,400,450,0.25)
 
 #|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 platforms_zemlq = [
@@ -763,14 +938,14 @@ btm_left = Btm_battle(530,270,70,70,7)
 
 
 player_btl = PlayerForBattle(-30,30)
-player = Player(20,500)
-#player = Player(650,45)
+#player = Player(10,550)
+player = Player(650,45)
 
 kivi = Kivi(700,45,65,65)
 belka = Belka(690,15,85,85)
 kiki = Kiki(700,20,75,75)
 battle_system = BattleSystem()
-level = 1
+level = 3
 batl = False
 while True:
     anim_bg.draw(sc)
@@ -783,11 +958,6 @@ while True:
         if btm_ng.draw(sc):
             menu_st = "main"
             print("new game")
-        elif btm_prd.draw(sc):
-            print("prodol")
-        elif btm_st.draw(sc):
-            menu_st = "setting"
-            print("setting")
         elif btm_sprv.draw(sc):
             menu_st = "spravka"
             print("spravka")
@@ -841,17 +1011,58 @@ while True:
             if keys[pygame.K_LEFT]:
                 battle_system.check_input('left')
 
-            if battle_system.score >= 1000 and level ==3:
+            if battle_system.score >= 1000 and level == 3:
                 batl = False
+                battle_system.nw_level = 0
+
+                current_level_score = battle_system.score
+                if level == 1:
+                    player_stats["level1_score"] = max(player_stats["level1_score"], current_level_score)
+                elif level == 2:
+                    player_stats["level2_score"] = max(player_stats["level2_score"], current_level_score)
+                elif level == 3:
+                    player_stats["level3_score"] = max(player_stats["level3_score"], current_level_score)
+                player_stats["total_score"] = player_stats["level1_score"] + player_stats["level2_score"] + \
+                                              player_stats["level3_score"]
+                player_stats["best_score"] = max(player_stats["best_score"], player_stats["total_score"])
+                player_stats["games_played"] += 1
+                save_player_stats()
+                get_player_name()
+                #if not player_name:
+                #    get_player_name()
+                add_score(player_name, player_stats["total_score"])
+                win = True
+                if win:
+                    menu_st = "menu"
+                    sc.blit(bg, (0, 0))
+                    level = 1
+                    player.rect.x = 20
+                    player.rect.y = 500
+
             elif battle_system.score >= 1000:
                 batl = False
                 level += 1
                 player.rect.x = 20
                 player.rect.y = 500
+                battle_system.nw_level = 0
+
+                current_level_score = battle_system.score
+                if level - 1 == 1:
+                    player_stats["level1_score"] = max(player_stats["level1_score"], current_level_score)
+                elif level - 1 == 2:
+                    player_stats["level2_score"] = max(player_stats["level2_score"], current_level_score)
+                save_player_stats()
+
             elif battle_system.helf <= -150:
                 batl = False
                 player.rect.x = 20
                 player.rect.y = 500
+                battle_system.nw_level = 0
+                battle_system.helf = 0
+                battle_system.score = 0
+                player_stats["games_played"] += 1
+                save_player_stats()
+
 
         else:
             if level == 1:
@@ -868,13 +1079,13 @@ while True:
                 player.draw(sc)
                 if player.colliz_en(700, 45, kivi):
                     batl = True
+                    battle_system.nw_level = 0
 
             elif level == 2:
                 all_pl = platforms_zemlq + platforms_sk_fly_levl2
                 player.update(all_pl, lians)
                 sc.blit(bg_l2, (0, 0))
 
-                # Рисуем все платформы
                 for platform_s_f in platforms_sk_fly_levl2:
                     platform_s_f.draw(sc)
                 for platform_z in platforms_zemlq:
@@ -901,6 +1112,7 @@ while True:
                 if player.colliz_en(690, 15, belka):
                     battle_system.score = 0
                     battle_system.helf = 0
+
                     batl = True
 
             elif level == 3:
@@ -950,13 +1162,28 @@ while True:
                 if keys[pygame.K_UP] and not player.on_lians:
                     player.jump()
 
-    elif menu_st == "setting":
-        pass
     elif menu_st == "spravka":
-        pass
+        ms = pygame.Surface((800, 600), pygame.SRCALPHA)
+        ms.fill((0, 0, 0, 50))
+        sc.blit(ms, (0, 0))
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            menu_st = "menu"
     elif menu_st == "akk":
-        pass
+        ms = pygame.Surface((800, 600), pygame.SRCALPHA)
+        ms.fill((0, 0, 0, 50))
+        sc.blit(ms, (0, 0))
+        draw_account_screen()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            menu_st = "menu"
     elif menu_st == "statistic":
-        pass
+        ms = pygame.Surface((800, 600), pygame.SRCALPHA)
+        ms.fill((0, 0, 0, 50))
+        sc.blit(ms, (0, 0))
+        draw_statistics_screen()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            menu_st = "menu"
 
     pygame.display.update()
