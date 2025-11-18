@@ -1,6 +1,7 @@
 
 import pygame
 import sys
+import random
 pygame.init()
 h,w = 800,600
 GRAVITY = 0.5
@@ -37,6 +38,18 @@ def load_player_sor():
         sprites_pl[name] = img
 
     return sprites_pl
+
+btm_battle = [
+    pygame.image.load("sprites/btm_battle/up_100.png"),
+    pygame.image.load("sprites/btm_battle/down_100.png"),
+    pygame.image.load("sprites/btm_battle/right_100.png"),
+    pygame.image.load("sprites/btm_battle/left_100.png"),
+    pygame.image.load("sprites/btm_battle/up_70.png"),
+    pygame.image.load("sprites/btm_battle/down_70.png"),
+    pygame.image.load("sprites/btm_battle/right_70.png"),
+    pygame.image.load("sprites/btm_battle/left_70.png"),
+
+]
 
 bg_spr = [
     pygame.image.load("sprites/bg/bg_menu1.png"),
@@ -78,6 +91,117 @@ platform_sprites = [
     pygame.image.load("sprites/spr/liana2.png").convert_alpha()
 ]
 
+
+class FlyingArrow:
+    def __init__(self, direction, speed=3):
+        self.direction = direction
+        self.speed = speed
+        self.active = True
+
+        if direction == 'up':
+            self.sprite = pygame.transform.scale(btm_battle[0], (60, 60))
+        elif direction == 'down':
+            self.sprite = pygame.transform.scale(btm_battle[1], (60, 60))
+        elif direction == 'right':
+            self.sprite = pygame.transform.scale(btm_battle[2], (60, 60))
+        elif direction == 'left':
+            self.sprite = pygame.transform.scale(btm_battle[3], (60, 60))
+
+        self.rect = self.sprite.get_rect()
+        self.rect.x = self.get_target_x()
+        self.rect.y = -100
+
+    def get_target_x(self):
+        # Определяем x-координату целевой статичной стрелки
+        if self.direction == 'up':
+            return 300
+        elif self.direction == 'down':
+            return 380
+        elif self.direction == 'right':
+            return 460
+        elif self.direction == 'left':
+            return 530
+
+    def update(self):
+        self.rect.y += self.speed
+
+        target_y = 270
+        if self.rect.y > target_y + 100:
+            self.active = False
+            return "miss"
+        return None
+
+    def check_hit(self):
+        target_y = 270
+        hit_zone = 50
+
+        if abs(self.rect.y - target_y) < hit_zone:
+            self.active = False
+            return "hit"
+        return None
+
+    def draw(self, surface):
+        surface.blit(self.sprite, self.rect)
+
+
+class BattleSystem:
+    def __init__(self):
+        self.arrows = []
+        self.score = 0
+        self.helf = 0
+        self.arrow_timer = 0
+        self.arrow_interval = 60
+
+    def update(self):
+        self.arrow_timer += 1
+        if self.arrow_timer >= self.arrow_interval:
+            self.arrow_timer = 0
+            self.spawn_arrow()
+
+        for arrow in self.arrows[:]:
+            result = arrow.update()
+            if result == "miss":
+                self.arrows.remove(arrow)
+                self.score -= 50
+                self.helf -= 10
+            elif not arrow.active:
+                self.arrows.remove(arrow)
+
+    def spawn_arrow(self):
+        directions = ['up', 'down', 'left', 'right']
+        direction = random.choice(directions)
+        new_arrow = FlyingArrow(direction)
+        self.arrows.append(new_arrow)
+
+    def check_input(self, direction):
+        for arrow in self.arrows:
+            if arrow.direction == direction:
+                result = arrow.check_hit()
+                if result == "hit":
+                    self.arrows.remove(arrow)
+                    self.score += 100
+                    self.helf += 10
+                    return True
+        #self.score -= 90
+        return False
+
+    def draw_ui(self, surface):
+        # Отображение счета и комбо
+        font = pygame.font.Font(None, 36)
+        score_text = font.render(f'Score: {self.score}', True, (255, 255, 255))
+
+        surface.blit(score_text, (20, 500))
+
+
+class Btm_battle:
+    def __init__(self,x,y, w, h,sprite_index=0):
+        self.rect = pygame.Rect(x,y,w,h)
+        self.sprire = pygame.transform.scale(btm_battle[sprite_index],(w,h))
+
+    def draw(self, surface):
+        sc.blit(self.sprire,self.rect)
+
+
 class Platform:
     def __init__(self, x, y, w, h, sprite_index=0):
         self.rect = pygame.Rect(x, y, w, h)
@@ -108,6 +232,48 @@ class Kiki:
         self.sprite = pygame.transform.scale(kiki_spr[sp_i],(w,h))
     def draw(self,surface):
         sc.blit(self.sprite,self.rect)
+
+
+class PlayerForBattle:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 200, 350)
+        self.battle_sprites = self.load_battle_sprites()
+        self.current_sprite = "idle"
+        self.animation_frame = 0
+        self.last_update = pygame.time.get_ticks()
+
+    def load_battle_sprites(self):
+        battle_sprites = {}
+        sprites_rl = {
+            'idle': 'player_idle1.png',
+            'attack': 'player_run_r1.png',
+            'hit': 'player_jump_r_1.png',
+            'victory': 'player_idle2.png'
+        }
+
+        for name, filename in sprites_rl.items():
+            img = pygame.image.load(f'sprites/player/{filename}').convert_alpha()
+            img = pygame.transform.scale(img, (500, 500))
+            battle_sprites[name] = img
+
+        return battle_sprites
+
+    def set_animation(self, animation_name):
+        self.current_sprite = animation_name
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 200:
+            self.last_update = now
+            self.animation_frame = (self.animation_frame + 1) % 2
+
+    def draw(self, surface):
+        self.update()
+        sprite_key = self.current_sprite
+
+        if sprite_key in self.battle_sprites:
+            surface.blit(self.battle_sprites[sprite_key], self.rect)
+
 class Player:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 35, 35)
@@ -336,6 +502,8 @@ bg_l2 = pygame.image.load("sprites/bg/bg_level2.png").convert()
 bg_l2 = pygame.transform.smoothscale(bg_l2,(800,600))
 bg_l3 = pygame.image.load("sprites/bg/bg_level3.png").convert()
 bg_l3 = pygame.transform.smoothscale(bg_l3,(800,600))
+bg_btl = pygame.image.load("sprites/bg/battle.png").convert()
+bg_btl = pygame.transform.smoothscale(bg_btl,(800,600))
 
 pygame.display.update()
 
@@ -583,11 +751,26 @@ anim_kivi = AnimatedEnemy(700,45,65,65,kivi_spr,[0,1,2,1],0.3)
 anim_belka = AnimatedEnemy(690,15,90,90,belka_spr,[1,0,2,0],0.15)
 anim_kiki = AnimatedEnemy(700,20,75,75,kiki_spr,[1,0,2,0],0.19)
 
+
+anim_kivi_btl = AnimatedEnemy(500,300,250,250,kivi_spr,[0,1,2,1],0.5)
+anim_belka_btl = AnimatedEnemy(440,180,400,400,belka_spr,[0,1,2,1],0.5)
+anim_kiki_btl = AnimatedEnemy(440,230,320,320,kiki_spr,[0,1,2,1],0.4)
+
+btm_up = Btm_battle(300,270,70,70,4)
+btm_down = Btm_battle(380,270,70,70,5)
+btm_right = Btm_battle(460,270,70,70,6)
+btm_left = Btm_battle(530,270,70,70,7)
+
+
+player_btl = PlayerForBattle(-30,30)
 player = Player(20,500)
+#player = Player(650,45)
+
 kivi = Kivi(700,45,65,65)
 belka = Belka(690,15,85,85)
 kiki = Kiki(700,20,75,75)
-level = 2
+battle_system = BattleSystem()
+level = 1
 batl = False
 while True:
     anim_bg.draw(sc)
@@ -596,8 +779,7 @@ while True:
         if i.type == pygame.QUIT:
             sys.exit()
 
-
-    if menu_st =="menu":
+    if menu_st == "menu":
         if btm_ng.draw(sc):
             menu_st = "main"
             print("new game")
@@ -617,9 +799,7 @@ while True:
             print("stst")
         elif btm_ex.draw(sc):
             print("exit")
-            raise  SystemExit
-
-
+            raise SystemExit
 
     if menu_st == "main":
         keys = pygame.key.get_pressed()
@@ -627,121 +807,156 @@ while True:
             menu_st = "menu"
             sc.blit(bg, (0, 0))
 
+        if batl:
+            sc.blit(bg_btl, (0, 0))
+            battle_system.update()
 
-        if level == 1:
-            all_pl = platforms_zemlq+platforms_sk_fly_levl1
-            player.update(all_pl,lians)
-            sc.blit(bg_l1, (0, 0))
-            for platform_s_f in platforms_sk_fly_levl1:
-                platform_s_f.draw(sc)
-            anim_kivi.draw(sc)
-            if player.colliz_en(700,45,kivi):
-                player.rect.x = 20
-                player.rect.y = 500
-                batl = True
-            if batl:
-                level = 2
-                batl = False
+            player_btl.draw(sc)
+            player_btl.update()
 
+            if level == 1:
+                anim_kivi_btl.draw(sc)
+            elif level == 2:
+                anim_belka_btl.draw(sc)
+            elif level == 3:
+                anim_kiki_btl.draw(sc)
 
-        elif level==2:
-            all_pl = platforms_zemlq+platforms_sk_fly_levl2
-            player.update(all_pl,lians)
-            if keys[pygame.K_UP] and player.on_lians:
-                player.start_climb(lians)
-                player.climb_up()
-            elif keys[pygame.K_DOWN] and player.on_lians:
-                player.start_climb(lians)
-                player.climb_down()
-            elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
-                player.stop_climb_move()
+            btm_up.draw(sc)
+            btm_down.draw(sc)
+            btm_right.draw(sc)
+            btm_left.draw(sc)
 
-            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
-                player.stop_climb()
-            sc.blit(bg_l2, (0, 0))
-            if keys[pygame.K_UP] and player.on_lians:
-                player.start_climb(lians)
-                player.climb_up()
-            elif keys[pygame.K_DOWN] and player.on_lians:
-                player.start_climb(lians)
-                player.climb_down()
-            elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
-                player.stop_climb_move()
+            for arrow in battle_system.arrows:
+                arrow.draw(sc)
 
-            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
-                player.stop_climb()
+            battle_system.draw_ui(sc)
 
-            for platform_s_f in platforms_sk_fly_levl2:
-                platform_s_f.draw(sc)
-            for lian in lians:
-                lian.draw(sc)
-            anim_belka.draw(sc)
-            if player.colliz_en(690,15,belka):
-                player.rect.x = 20
-                player.rect.y = 500
-                batl = True
-            if batl:
-                level = 3
-                batl = False
-
-
-
-        elif level==3:
-            all_pl = platforms_zemlq+platforms_sk_fly_levl3
-            player.update(all_pl, lians)
-
-            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
-                player.stop_climb()
-            sc.blit(bg_l2, (0, 0))
-            if keys[pygame.K_UP] and player.on_lians:
-                player.start_climb(lians)
-                player.climb_up()
-            elif keys[pygame.K_DOWN] and player.on_lians:
-                player.start_climb(lians)
-                player.climb_down()
-            elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
-                player.stop_climb_move()
-
-            if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
-                player.stop_climb()
-
-            sc.blit(bg_l3, (0, 0))
-            for platform_s_f in platforms_sk_fly_levl3:
-                platform_s_f.draw(sc)
-            for lian in lians:
-                lian.draw(sc)
-            if player.colliz_en(700,20,kiki):
-                batl = True
-            if batl:
-                pass
-            anim_kiki.draw(sc)
-        for platform_z in platforms_zemlq:
-            platform_z.draw(sc)
-        for platform_t in platforms_travka:
-            platform_t.draw(sc)
-
-
-
-        if not player.is_climb:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                battle_system.check_input('up')
+            if keys[pygame.K_DOWN]:
+                battle_system.check_input('down')
+            if keys[pygame.K_RIGHT]:
+                battle_system.check_input('right')
             if keys[pygame.K_LEFT]:
-                player.vx = -pl_sp
-                player.facing_right = False
-            elif keys[pygame.K_RIGHT]:
-                player.vx = pl_sp
-                player.facing_right = True
-            else:
-                player.vx = 0
+                battle_system.check_input('left')
 
-            if keys[pygame.K_UP] and not player.on_lians:
-                player.jump()
+            if battle_system.score >= 1000 and level ==3:
+                batl = False
+            elif battle_system.score >= 1000:
+                batl = False
+                level += 1
+                player.rect.x = 20
+                player.rect.y = 500
+            elif battle_system.helf <= -150:
+                batl = False
+                player.rect.x = 20
+                player.rect.y = 500
 
-        player.draw(sc)
+        else:
+            if level == 1:
+                all_pl = platforms_zemlq + platforms_sk_fly_levl1
+                player.update(all_pl, lians)
+                sc.blit(bg_l1, (0, 0))
+                for platform_s_f in platforms_sk_fly_levl1:
+                    platform_s_f.draw(sc)
+                for platform_z in platforms_zemlq:
+                    platform_z.draw(sc)
+                for platform_t in platforms_travka:
+                    platform_t.draw(sc)
+                anim_kivi.draw(sc)
+                player.draw(sc)
+                if player.colliz_en(700, 45, kivi):
+                    batl = True
+
+            elif level == 2:
+                all_pl = platforms_zemlq + platforms_sk_fly_levl2
+                player.update(all_pl, lians)
+                sc.blit(bg_l2, (0, 0))
+
+                # Рисуем все платформы
+                for platform_s_f in platforms_sk_fly_levl2:
+                    platform_s_f.draw(sc)
+                for platform_z in platforms_zemlq:
+                    platform_z.draw(sc)
+                for platform_t in platforms_travka:
+                    platform_t.draw(sc)
+                for lian in lians:
+                    lian.draw(sc)
+
+                anim_belka.draw(sc)
+                player.draw(sc)
+
+                if keys[pygame.K_UP] and player.on_lians:
+                    player.start_climb(lians)
+                    player.climb_up()
+                elif keys[pygame.K_DOWN] and player.on_lians:
+                    player.start_climb(lians)
+                    player.climb_down()
+                elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
+                    player.stop_climb_move()
+
+                if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
+                    player.stop_climb()
+                if player.colliz_en(690, 15, belka):
+                    battle_system.score = 0
+                    battle_system.helf = 0
+                    batl = True
+
+            elif level == 3:
+                all_pl = platforms_zemlq + platforms_sk_fly_levl3
+                player.update(all_pl, lians)
+                sc.blit(bg_l3, (0, 0))
+
+                for platform_s_f in platforms_sk_fly_levl3:
+                    platform_s_f.draw(sc)
+                for platform_z in platforms_zemlq:
+                    platform_z.draw(sc)
+                for platform_t in platforms_travka:
+                    platform_t.draw(sc)
+                for lian in lians:
+                    lian.draw(sc)
+
+                anim_kiki.draw(sc)
+                player.draw(sc)
+
+                if keys[pygame.K_UP] and player.on_lians:
+                    player.start_climb(lians)
+                    player.climb_up()
+                elif keys[pygame.K_DOWN] and player.on_lians:
+                    player.start_climb(lians)
+                    player.climb_down()
+                elif not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and player.is_climb:
+                    player.stop_climb_move()
+
+                if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
+                    player.stop_climb()
+
+                if player.colliz_en(700, 20, kiki):
+                    battle_system.score = 0
+                    battle_system.helf = 0
+                    batl = True
+
+            if not player.is_climb and not batl:
+                if keys[pygame.K_LEFT]:
+                    player.vx = -pl_sp
+                    player.facing_right = False
+                elif keys[pygame.K_RIGHT]:
+                    player.vx = pl_sp
+                    player.facing_right = True
+                else:
+                    player.vx = 0
+
+                if keys[pygame.K_UP] and not player.on_lians:
+                    player.jump()
+
     elif menu_st == "setting":
         pass
     elif menu_st == "spravka":
         pass
     elif menu_st == "akk":
         pass
-    elif menu_st == "akk":
+    elif menu_st == "statistic":
         pass
+
     pygame.display.update()
