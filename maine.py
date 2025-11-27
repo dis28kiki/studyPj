@@ -1,4 +1,3 @@
-
 import pygame
 import sys
 import random
@@ -11,11 +10,39 @@ pl_sp = 3
 sc = pygame.display.set_mode((h, w))
 pygame.display.set_caption("Тайна земли")
 clock = pygame.time.Clock()
+try:
+    pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+    print("Аудиосистема инициализирована")
+except pygame.error as e:
+    print(f"Ошибка инициализации аудио: {e}")
+sound_effects = {}
 
 
-#pygame.mixer.music.load('musik/x.mp3')
-#pygame.mixer.music.set_volume(1)
-#pygame.mixer.music.play(-1)
+def load_sounds():
+    global sound_effects
+    sound_effects = {
+        'jump': pygame.mixer.Sound('musik/jump.mp3'),
+        'menu': pygame.mixer.Sound("musik/menu.mp3"),
+        'level': pygame.mixer.Sound('musik/level.mp3'),
+        'for_btl': pygame.mixer.Sound('musik/for_btl.mp3'),
+        'up': pygame.mixer.Sound('musik/up.mp3'),
+        'down': pygame.mixer.Sound('musik/down.mp3'),
+        'right': pygame.mixer.Sound('musik/right.mp3'),
+        'left': pygame.mixer.Sound('musik/left.mp3'),
+        'fall': pygame.mixer.Sound('musik/fall.mp3')
+    }
+
+load_sounds()
+pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+
+background_channel = pygame.mixer.Channel(0)
+effect_channels = [pygame.mixer.Channel(i) for i in range(1, 8)]
+current_effect_channel = 0
+
+def play_effect(sound_name):
+    global current_effect_channel
+    effect_channels[current_effect_channel].play(sound_effects[sound_name])
+    current_effect_channel = (current_effect_channel + 1) % len(effect_channels)
 
 SCORE_FILE = "scores.txt"
 current_score = 0
@@ -61,7 +88,6 @@ def add_score(name, score):
 
 
 def reset_player_stats():
-    """Сбрасывает статистику игрока"""
     global player_stats
     player_stats = {
         "level1_score": 0,
@@ -73,7 +99,6 @@ def reset_player_stats():
     }
 
 def load_player_stats():
-    """Загружает статистику игрока из файла"""
     global player_stats
     if player_name:
         try:
@@ -91,7 +116,6 @@ def load_player_stats():
 
 
 def save_player_stats():
-    """Сохраняет статистику игрока в файл"""
     if player_name:
         with open(f"player_{player_name}.txt", 'w') as f:
             for key, value in player_stats.items():
@@ -213,6 +237,15 @@ def load_player_sor():
         sprites_pl[name] = img
 
     return sprites_pl
+
+spravka_f = [
+    pygame.image.load("sprites/sprv/img.png"),
+    pygame.image.load("sprites/sprv/img_1.png"),
+
+]
+spravka1 = pygame.transform.scale(spravka_f[0], (400, 300))
+spravka2 = pygame.transform.scale(spravka_f[1], (400, 300))
+
 
 btm_battle = [
     pygame.image.load("sprites/btm_battle/up_100.png"),
@@ -354,7 +387,7 @@ class BattleSystem:
         for arrow in self.arrows:
             if arrow.direction == direction:
                 result = arrow.check_hit()
-                if result == "hit":
+                if result == "hit" and self.score<3000:
                     self.arrows.remove(arrow)
                     self.score += 100
                     self.helf += 10
@@ -570,6 +603,7 @@ class Player:
     def jump(self):
         if self.on_ground:
             self.vy = -jump
+            play_effect('jump')
 
     def draw(self, surface):
         now = pygame.time.get_ticks()
@@ -938,15 +972,16 @@ btm_left = Btm_battle(530,270,70,70,7)
 
 
 player_btl = PlayerForBattle(-30,30)
-#player = Player(10,550)
-player = Player(650,45)
+player = Player(10,550)
+#player = Player(650,45)
 
 kivi = Kivi(700,45,65,65)
 belka = Belka(690,15,85,85)
 kiki = Kiki(700,20,75,75)
 battle_system = BattleSystem()
-level = 3
+level = 2
 batl = False
+menu_sound_playing = False
 while True:
     anim_bg.draw(sc)
     clock.tick(FPS)
@@ -955,32 +990,49 @@ while True:
             sys.exit()
 
     if menu_st == "menu":
+        if not menu_sound_playing:
+            sound_effects['menu'].play()
+            menu_sound_playing = True
         if btm_ng.draw(sc):
+            sound_effects['menu'].stop()
             menu_st = "main"
+            sound_effects['fall'].play()
+
             print("new game")
         elif btm_sprv.draw(sc):
+            sound_effects['menu'].stop()
             menu_st = "spravka"
             print("spravka")
         elif btm_akk.draw(sc):
+            sound_effects['menu'].stop()
             menu_st = "akk"
             print("akk")
         elif btm_stat.draw(sc):
+            sound_effects['menu'].stop()
             menu_st = "statistic"
             print("stst")
         elif btm_ex.draw(sc):
+            sound_effects['menu'].stop()
             print("exit")
             raise SystemExit
 
     if menu_st == "main":
+        sound_effects['menu'].stop()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
+            menu_sound_playing = False
+            if not menu_sound_playing:
+                sound_effects['menu'].play()
+                menu_sound_playing = True
             menu_st = "menu"
-            sc.blit(bg, (0, 0))
+        sc.blit(bg, (0, 0))
 
         if batl:
             sc.blit(bg_btl, (0, 0))
+            sound_effects['menu'].stop()
+            sound_effects["level"].stop()
             battle_system.update()
-
+            sound_effects["for_btl"].play()
             player_btl.draw(sc)
             player_btl.update()
 
@@ -1002,14 +1054,25 @@ while True:
             battle_system.draw_ui(sc)
 
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                battle_system.check_input('up')
-            if keys[pygame.K_DOWN]:
-                battle_system.check_input('down')
-            if keys[pygame.K_RIGHT]:
-                battle_system.check_input('right')
-            if keys[pygame.K_LEFT]:
-                battle_system.check_input('left')
+            if batl:
+                if not background_channel.get_busy():
+                    background_channel.play(sound_effects["for_btl"], -1)
+
+                if keys[pygame.K_UP]:
+                    battle_system.check_input('up')
+                    play_effect('up')
+
+                if keys[pygame.K_DOWN]:
+                    battle_system.check_input('down')
+                    play_effect('down')
+
+                if keys[pygame.K_RIGHT]:
+                    battle_system.check_input('right')
+                    play_effect('right')
+
+                if keys[pygame.K_LEFT]:
+                    battle_system.check_input('left')
+                    play_effect('left')
 
             if battle_system.score >= 1000 and level == 3:
                 batl = False
@@ -1034,6 +1097,7 @@ while True:
                 win = True
                 if win:
                     menu_st = "menu"
+                    sound_effects['menu'].play()
                     sc.blit(bg, (0, 0))
                     level = 1
                     player.rect.x = 20
@@ -1054,6 +1118,7 @@ while True:
                 save_player_stats()
 
             elif battle_system.helf <= -150:
+                play_effect('fall')
                 batl = False
                 player.rect.x = 20
                 player.rect.y = 500
@@ -1066,6 +1131,7 @@ while True:
 
         else:
             if level == 1:
+                sound_effects["level"].play()
                 all_pl = platforms_zemlq + platforms_sk_fly_levl1
                 player.update(all_pl, lians)
                 sc.blit(bg_l1, (0, 0))
@@ -1081,7 +1147,10 @@ while True:
                     batl = True
                     battle_system.nw_level = 0
 
+
+
             elif level == 2:
+                sound_effects["level"].play()
                 all_pl = platforms_zemlq + platforms_sk_fly_levl2
                 player.update(all_pl, lians)
                 sc.blit(bg_l2, (0, 0))
@@ -1109,13 +1178,14 @@ while True:
 
                 if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
                     player.stop_climb()
-                if player.colliz_en(690, 15, belka):
+                if player.colliz_en(690, 0, belka):
                     battle_system.score = 0
                     battle_system.helf = 0
 
                     batl = True
 
             elif level == 3:
+                sound_effects["level"].play()
                 all_pl = platforms_zemlq + platforms_sk_fly_levl3
                 player.update(all_pl, lians)
                 sc.blit(bg_l3, (0, 0))
@@ -1144,7 +1214,7 @@ while True:
                 if player.is_climb and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]):
                     player.stop_climb()
 
-                if player.colliz_en(700, 20, kiki):
+                if player.colliz_en(700, 0, kiki):
                     battle_system.score = 0
                     battle_system.helf = 0
                     batl = True
@@ -1159,15 +1229,49 @@ while True:
                 else:
                     player.vx = 0
 
-                if keys[pygame.K_UP] and not player.on_lians:
+                if keys[pygame.K_UP] and not player.on_lians and player.on_ground and not player.jumping:
+                    #sound_effects['jump'].play()
                     player.jump()
+                    player.jumping = True
+                elif not keys[pygame.K_UP] and player.on_ground:
+                    player.jumping = False
 
     elif menu_st == "spravka":
         ms = pygame.Surface((800, 600), pygame.SRCALPHA)
         ms.fill((0, 0, 0, 50))
         sc.blit(ms, (0, 0))
+        sc.blit(spravka1,(0,0))
+        sc.blit(spravka2,(400,300))
         keys = pygame.key.get_pressed()
+        font_medium = pygame.font.Font(None, 36)
+        spr1_text = font_medium.render(f"""Для управления персонажем""", True, (60, 179, 113))
+        spr1_text2 = font_medium.render(f"""используйте клавиши""", True, (60, 179, 113))
+        spr1_text5 = font_medium.render(f"""up,down,right,left.""", True, (60, 179, 113))
+
+        spr1_text3 = font_medium.render(f"""Первоначальная цель""", True, (60, 179, 113))
+        spr1_text4 = font_medium.render(f"""добраться до врага.""", True, (60, 179, 113))
+
+
+
+        spr2_text = font_medium.render(f"В музыкальном баттле", True, (60, 179, 113))
+        spr2_text2 = font_medium.render(f"используйте клавиши", True, (60, 179, 113))
+        spr2_text3 = font_medium.render(f"up,down,right,left", True, (60, 179, 113))
+
+
+
+        sc.blit(spr1_text, (20, 350))
+        sc.blit(spr1_text2, (20, 380))
+        sc.blit(spr1_text5, (20, 410))
+        sc.blit(spr1_text3, (30, 440))
+        sc.blit(spr1_text4, (30, 470))
+
+        sc.blit(spr2_text, (450, 130))
+        sc.blit(spr2_text2, (450, 160))
+        sc.blit(spr2_text3, (450, 190))
+
+
         if keys[pygame.K_ESCAPE]:
+            sound_effects['menu'].play()
             menu_st = "menu"
     elif menu_st == "akk":
         ms = pygame.Surface((800, 600), pygame.SRCALPHA)
@@ -1176,6 +1280,7 @@ while True:
         draw_account_screen()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
+            sound_effects['menu'].play()
             menu_st = "menu"
     elif menu_st == "statistic":
         ms = pygame.Surface((800, 600), pygame.SRCALPHA)
@@ -1184,6 +1289,7 @@ while True:
         draw_statistics_screen()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
+            sound_effects['menu'].play()
             menu_st = "menu"
 
     pygame.display.update()
