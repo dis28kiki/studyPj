@@ -33,11 +33,13 @@
     ```bash
     git clone https://github.com/dis28kiki/studyPj.git
     ```
-3.  Установите библиотеку Pygame:
+3.  Установите виртуальное окружение и активируйте его
+   
+4.  Установите библиотеку Pygame:
     ```bash
     pip install pygame
     ```
-4.  Запустите игру:
+5.  Запустите игру:
     ```bash
     python maine.py
     ```
