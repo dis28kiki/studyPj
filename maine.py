@@ -1233,15 +1233,15 @@ while True:
         sc.blit(spravka2, (400, 300))
         font_medium = pygame.font.Font(None, 36)
 
-        sc.blit(font_medium.render("Для управления персонажем", True, (60, 179, 113)), (20, 350))
-        sc.blit(font_medium.render("используйте клавиши", True, (60, 179, 113)), (20, 380))
-        sc.blit(font_medium.render("up,down,right,left.", True, (60, 179, 113)), (20, 410))
-        sc.blit(font_medium.render("Первоначальная цель", True, (60, 179, 113)), (30, 440))
-        sc.blit(font_medium.render("добраться до врага.", True, (60, 179, 113)), (30, 470))
+        sc.blit(font_medium.render("Для управления персонажем", True, (255, 155, 255)), (20, 350))
+        sc.blit(font_medium.render("используйте клавиши", True, (255, 155, 255)), (20, 380))
+        sc.blit(font_medium.render("up,down,right,left.", True, (255, 155, 255)), (20, 410))
+        sc.blit(font_medium.render("Первоначальная цель", True, (255, 155, 255)), (30, 440))
+        sc.blit(font_medium.render("добраться до врага.", True, (255, 155, 255)), (30, 470))
 
-        sc.blit(font_medium.render("В музыкальном баттле", True, (60, 179, 113)), (450, 130))
-        sc.blit(font_medium.render("используйте клавиши", True, (60, 179, 113)), (450, 160))
-        sc.blit(font_medium.render("up,down,right,left", True, (60, 179, 113)), (450, 190))
+        sc.blit(font_medium.render("В музыкальном баттле", True, (255, 155, 255)), (450, 130))
+        sc.blit(font_medium.render("используйте клавиши", True, (255, 155, 255)), (450, 160))
+        sc.blit(font_medium.render("up,down,right,left", True, (255, 155, 255)), (450, 190))
 
         if keys[pygame.K_ESCAPE]:
             menu_st = "menu"
