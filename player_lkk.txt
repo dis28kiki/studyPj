@@ -1,0 +1,6 @@
+level1_score:1000
+level2_score:1000
+level3_score:1000
+total_score:3000
+games_played:1
+best_score:3000
